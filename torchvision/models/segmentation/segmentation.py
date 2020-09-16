@@ -5,7 +5,7 @@ from .deeplabv3 import DeepLabHead, DeepLabV3
 from .fcn import FCN, FCNHead
 
 
-__all__ = ['fcn_resnet50', 'fcn_resnet101', 'deeplabv3_resnet50', 'deeplabv3_resnet101']
+__all__ = ['fcn_resnet50', 'fcn_resnet101', 'deeplabv3_resnet50', 'deeplabv3_resnet101', 'deeplabv3plus_resnet50', 'deeplabv3plus_resnet101']
 
 
 model_urls = {
