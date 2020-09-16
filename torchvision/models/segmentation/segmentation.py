@@ -1,7 +1,7 @@
 from .._utils import IntermediateLayerGetter
 from ..utils import load_state_dict_from_url
 from .. import resnet
-from .deeplabv3 import DeepLabHead, DeepLabV3
+from .deeplabv3 import DeepLabHead, DeepLabV3, DeepLabV3Plus
 from .fcn import FCN, FCNHead
 
 
@@ -52,7 +52,7 @@ def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
     model_map = {
-        'deeplabv3': (DeepLabHead, DeepLabV3)
+        'deeplabv3': (DeepLabHead, DeepLabV3Plus)
     }
     inplanes = 2048
     classifier = model_map[name][0](inplanes, num_classes)
