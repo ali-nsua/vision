@@ -2,10 +2,28 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from ._utils import _SimpleSegmentationModel
+from ._utils import _SimpleSegmentationModel, _DeepLabV3PlusModel
 
 
-__all__ = ["DeepLabV3"]
+__all__ = ["DeepLabV3", "DeepLabV3Plus"]
+
+
+
+class DeepLabV3Plus(_DeepLabV3PlusModel):
+    """
+    Implements DeepLabV3+ model from
+    `"Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
+    <https://arxiv.org/abs/1802.02611>`_.
+
+    Arguments:
+        backbone (nn.Module): the network used to compute the features for the model.
+            The backbone should return an OrderedDict[Tensor], with the key being
+            "out" for the last feature map used, and "aux" if an auxiliary classifier
+            is used.
+        classifier (nn.Module): module that takes the "out" element returned from
+            the backbone and returns a dense prediction.
+    """
+    pass
 
 
 class DeepLabV3(_SimpleSegmentationModel):
