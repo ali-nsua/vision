@@ -37,7 +37,7 @@ class _SimpleSegmentationModel(nn.Module):
 class _DeepLabV3PlusModel(nn.Module):
 
     def __init__(self, backbone, classifier, llsize=256):
-        super(_SimpleSegmentationModel, self).__init__()
+        super(_DeepLabV3PlusModel, self).__init__()
         self.backbone = backbone
         self.classifier = classifier
         # Upscaling the low-level features in the decoder
