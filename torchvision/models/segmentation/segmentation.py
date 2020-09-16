@@ -21,7 +21,7 @@ def _segm_resnet(name, backbone_name, num_classes, aux, pretrained_backbone=True
         pretrained=pretrained_backbone,
         replace_stride_with_dilation=[False, True, True])
 
-    return_layers = {'layer4': 'out'}
+    return_layers = {'layer4': 'out', 'layer_1': 'low_level_features'}
     if aux:
         return_layers['layer3'] = 'aux'
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
