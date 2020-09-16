@@ -128,25 +128,23 @@ def deeplabv3_resnet101(pretrained=False, progress=True,
     return _load_model('deeplabv3', 'resnet101', pretrained, progress, num_classes, aux_loss, False, **kwargs)
 
 
-def deeplabv3plus_resnet50(pretrained=False, progress=True,
+def deeplabv3plus_resnet50(pretrained=None, progress=True,
                            num_classes=21, **kwargs):
     """Constructs a DeepLabV3+ model with a ResNet-50 backbone.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on COCO train2017 which
-            contains the same classes as Pascal VOC
+        pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('deeplabv3', 'resnet50', pretrained, progress, num_classes, None, True, **kwargs)
+    return _load_model('deeplabv3', 'resnet50', False, progress, num_classes, None, True, **kwargs)
 
 
-def deeplabv3plus_resnet101(pretrained=False, progress=True,
+def deeplabv3plus_resnet101(pretrained=None, progress=True,
                             num_classes=21, **kwargs):
     """Constructs a DeepLabV3+ model with a ResNet-101 backbone.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on COCO train2017 which
-            contains the same classes as Pascal VOC
+        pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('deeplabv3', 'resnet101', pretrained, progress, num_classes, None, True, **kwargs)
+    return _load_model('deeplabv3', 'resnet101', False, progress, num_classes, None, True, **kwargs)
