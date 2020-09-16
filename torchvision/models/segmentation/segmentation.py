@@ -58,7 +58,7 @@ def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=
     classifier = model_map[name][0](inplanes, num_classes)
     base_model = model_map[name][1]
 
-    model = base_model(backbone, classifier, llsize=256)
+    model = base_model(backbone, classifier, num_classes, llsize=256)
     return model
 
 
