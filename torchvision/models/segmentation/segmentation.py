@@ -52,7 +52,7 @@ def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
     model_map = {
-        'deeplabv3': (DeepLabHead, DeepLabV3Plus)
+        'deeplabv3+': (DeepLabHead, DeepLabV3Plus)
     }
     inplanes = 2048
     classifier = model_map[name][0](inplanes, num_classes)
