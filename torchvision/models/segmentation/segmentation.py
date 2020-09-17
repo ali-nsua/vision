@@ -62,13 +62,23 @@ def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=
     return model
 
 
-def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss, dl3p, **kwargs):
+def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss, **kwargs):
     if pretrained:
         aux_loss = True
-    if dl3p:
-        model = _deeplabv3plus_resnet(arch_type, backbone, num_classes, **kwargs)
-    else:
-        model = _segm_resnet(arch_type, backbone, num_classes, aux_loss, **kwargs)
+    model = _segm_resnet(arch_type, backbone, num_classes, aux_loss, **kwargs)
+    if pretrained:
+        arch = arch_type + '_' + backbone + '_coco'
+        model_url = model_urls[arch]
+        if model_url is None:
+            raise NotImplementedError('pretrained {} is not supported as of now'.format(arch))
+        else:
+            state_dict = load_state_dict_from_url(model_url, progress=progress)
+            model.load_state_dict(state_dict)
+    return model
+
+
+def _load_dl3p_model(arch_type, backbone, pretrained, progress, num_classes, **kwargs):
+    model = _deeplabv3plus_resnet(arch_type, backbone, num_classes, **kwargs)
     if pretrained:
         arch = arch_type + '_' + backbone + '_coco'
         model_url = model_urls[arch]
@@ -89,7 +99,7 @@ def fcn_resnet50(pretrained=False, progress=True,
             contains the same classes as Pascal VOC
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('fcn', 'resnet50', pretrained, progress, num_classes, aux_loss, False, **kwargs)
+    return _load_model('fcn', 'resnet50', pretrained, progress, num_classes, aux_loss, **kwargs)
 
 
 def fcn_resnet101(pretrained=False, progress=True,
@@ -101,7 +111,7 @@ def fcn_resnet101(pretrained=False, progress=True,
             contains the same classes as Pascal VOC
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('fcn', 'resnet101', pretrained, progress, num_classes, aux_loss, False, **kwargs)
+    return _load_model('fcn', 'resnet101', pretrained, progress, num_classes, aux_loss, **kwargs)
 
 
 def deeplabv3_resnet50(pretrained=False, progress=True,
@@ -113,7 +123,7 @@ def deeplabv3_resnet50(pretrained=False, progress=True,
             contains the same classes as Pascal VOC
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('deeplabv3', 'resnet50', pretrained, progress, num_classes, aux_loss, False, **kwargs)
+    return _load_model('deeplabv3', 'resnet50', pretrained, progress, num_classes, aux_loss, **kwargs)
 
 
 def deeplabv3_resnet101(pretrained=False, progress=True,
@@ -125,7 +135,7 @@ def deeplabv3_resnet101(pretrained=False, progress=True,
             contains the same classes as Pascal VOC
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('deeplabv3', 'resnet101', pretrained, progress, num_classes, aux_loss, False, **kwargs)
+    return _load_model('deeplabv3', 'resnet101', pretrained, progress, num_classes, aux_loss, **kwargs)
 
 
 def deeplabv3plus_resnet50(pretrained=None, progress=True,
@@ -136,7 +146,7 @@ def deeplabv3plus_resnet50(pretrained=None, progress=True,
         pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('deeplabv3', 'resnet50', False, progress, num_classes, None, True, **kwargs)
+    return _load_dl3p_model('deeplabv3+', 'resnet50', False, progress, num_classes, **kwargs)
 
 
 def deeplabv3plus_resnet101(pretrained=None, progress=True,
@@ -147,4 +157,4 @@ def deeplabv3plus_resnet101(pretrained=None, progress=True,
         pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_model('deeplabv3', 'resnet101', False, progress, num_classes, None, True, **kwargs)
+    return _load_dl3p_model('deeplabv3+', 'resnet101', False, progress, num_classes, **kwargs)
