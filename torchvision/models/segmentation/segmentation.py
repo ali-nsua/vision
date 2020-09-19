@@ -78,17 +78,8 @@ def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss
     return model
 
 
-def _load_dl3p_model(arch_type, backbone, pretrained, progress, num_classes, **kwargs):
-    model = _deeplabv3plus_resnet(arch_type, backbone, num_classes, **kwargs)
-    if pretrained:
-        arch = arch_type + '_' + backbone + '_coco'
-        model_url = model_urls[arch]
-        if model_url is None:
-            raise NotImplementedError('pretrained {} is not supported as of now'.format(arch))
-        else:
-            state_dict = load_state_dict_from_url(model_url, progress=progress)
-            model.load_state_dict(state_dict)
-    return model
+def _load_dl3p_model(arch_type, backbone, num_classes, **kwargs):
+    return _deeplabv3plus_resnet(arch_type, backbone, num_classes, **kwargs)
 
 
 def fcn_resnet50(pretrained=False, progress=True,
