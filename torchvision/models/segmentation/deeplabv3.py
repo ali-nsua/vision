@@ -54,6 +54,13 @@ class DeepLabHead(nn.Sequential):
         )
 
 
+class DeepLabPlusHead(nn.Sequential):
+    def __init__(self, in_channels):
+        super(DeepLabPlusHead, self).__init__(
+            ASPP(in_channels, [12, 24, 36])
+        )
+
+
 class ASPPConv(nn.Sequential):
     def __init__(self, in_channels, out_channels, dilation):
         modules = [

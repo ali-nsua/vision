@@ -36,14 +36,14 @@ class _SimpleSegmentationModel(nn.Module):
 
 class _DeepLabV3PlusModel(nn.Module):
 
-    def __init__(self, backbone, classifier, num_classes, llsize=256):
+    def __init__(self, backbone, aspp, num_classes, llsize=256):
         super(_DeepLabV3PlusModel, self).__init__()
         self.backbone = backbone
-        self.classifier = classifier
-        self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 21, 1, bias=False),
-                                              nn.BatchNorm2d(21),
+        self.aspp = aspp
+        self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 256, 1, bias=False),
+                                              nn.BatchNorm2d(256),
                                               nn.ReLU())
-        self.final_emb = nn.Sequential(nn.Conv2d(42, 256, kernel_size=3, stride=1, padding=1, bias=False),
+        self.final_emb = nn.Sequential(nn.Conv2d(512, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                        nn.BatchNorm2d(256),
                                        nn.ReLU(),
                                        nn.Dropout(0.5),
@@ -59,7 +59,7 @@ class _DeepLabV3PlusModel(nn.Module):
 
         x, low_level_features = features["out"], features["low_level_features"]
         low_level_features = self.low_level_module(low_level_features)
-        x = self.classifier(x)
+        x = self.aspp(x)
         x = F.interpolate(x, size=low_level_features.size()[2:], mode='bilinear', align_corners=True)
         x = torch.cat((x, low_level_features), dim=1)
         x = self.final_emb(x)
