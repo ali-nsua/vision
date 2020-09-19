@@ -40,26 +40,23 @@ class _DeepLabV3PlusModel(nn.Module):
         super(_DeepLabV3PlusModel, self).__init__()
         self.backbone = backbone
         self.classifier = classifier
-        # Upscaling the low-level features in the decoder
-        # Thanks to @jfzhang95 for the detailed implementation
         self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 21, 1, bias=False),
                                               nn.BatchNorm2d(21),
                                               nn.ReLU())
         self.final_emb = nn.Sequential(nn.Conv2d(42, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                   nn.BatchNorm2d(256),
-                                   nn.ReLU(),
-                                   nn.Dropout(0.5),
-                                   nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                   nn.BatchNorm2d(256),
-                                   nn.ReLU(),
-                                   nn.Dropout(0.1),
-                                   nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
+                                       nn.BatchNorm2d(256),
+                                       nn.ReLU(),
+                                       nn.Dropout(0.5),
+                                       nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                       nn.BatchNorm2d(256),
+                                       nn.ReLU(),
+                                       nn.Dropout(0.1),
+                                       nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
 
     def forward(self, x):
         input_shape = x.shape[-2:]
-        # contract: features is a dict of tensors
         features = self.backbone(x)
-        
+
         x, low_level_features = features["out"], features["low_level_features"]
         low_level_features = self.low_level_module(low_level_features)
         x = self.classifier(x)
@@ -69,4 +66,3 @@ class _DeepLabV3PlusModel(nn.Module):
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
         return x
-    
