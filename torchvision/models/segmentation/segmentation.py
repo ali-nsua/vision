@@ -86,8 +86,8 @@ def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss
     return model
 
 
-def _load_dl3p_model(arch_type, backbone, pretrained, progress, num_classes, **kwargs):
-    model = _deeplabv3plus_resnet(arch_type, backbone, num_classes, **kwargs)
+def _load_dl3p_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss, **kwargs):
+    model = _deeplabv3plus_resnet(arch_type, backbone, num_classes, aux_loss, **kwargs)
     if pretrained:
         arch = arch_type + '_' + backbone + '_coco'
         model_url = model_urls[arch]
@@ -148,22 +148,22 @@ def deeplabv3_resnet101(pretrained=False, progress=True,
 
 
 def deeplabv3plus_resnet50(pretrained=None, progress=True,
-                           num_classes=21, **kwargs):
+                           num_classes=21, aux_loss=None, **kwargs):
     """Constructs a DeepLabV3+ model with a ResNet-50 backbone.
 
     Args:
         pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_dl3p_model('deeplabv3+', 'resnet50', False, progress, num_classes, **kwargs)
+    return _load_dl3p_model('deeplabv3+', 'resnet50', False, progress, num_classes, aux_loss, **kwargs)
 
 
 def deeplabv3plus_resnet101(pretrained=None, progress=True,
-                            num_classes=21, **kwargs):
+                            num_classes=21, aux_loss=None, **kwargs):
     """Constructs a DeepLabV3+ model with a ResNet-101 backbone.
 
     Args:
         pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_dl3p_model('deeplabv3+', 'resnet101', False, progress, num_classes, **kwargs)
+    return _load_dl3p_model('deeplabv3+', 'resnet101', False, progress, num_classes, aux_loss, **kwargs)
