@@ -40,10 +40,10 @@ class _DeepLabV3PlusModel(nn.Module):
         super(_DeepLabV3PlusModel, self).__init__()
         self.backbone = backbone
         self.aspp = aspp
-        self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 256, 1, bias=False),
-                                              nn.BatchNorm2d(256),
+        self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 48, 1, bias=False),
+                                              nn.BatchNorm2d(48),
                                               nn.ReLU())
-        self.final_emb = nn.Sequential(nn.Conv2d(512, 256, kernel_size=3, stride=1, padding=1, bias=False),
+        self.final_emb = nn.Sequential(nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                        nn.BatchNorm2d(256),
                                        nn.ReLU(),
                                        nn.Dropout(0.5),
