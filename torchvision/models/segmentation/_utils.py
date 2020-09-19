@@ -36,11 +36,10 @@ class _SimpleSegmentationModel(nn.Module):
 
 class _DeepLabV3PlusModel(nn.Module):
 
-    def __init__(self, backbone, aspp, num_classes, aux_classifier, llsize=256):
+    def __init__(self, backbone, aspp, num_classes, llsize=256):
         super(_DeepLabV3PlusModel, self).__init__()
         self.backbone = backbone
         self.aspp = aspp
-        self.aux_classifier = aux_classifier
         self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 48, 1, bias=False),
                                               nn.BatchNorm2d(48),
                                               nn.ReLU())
@@ -67,11 +66,5 @@ class _DeepLabV3PlusModel(nn.Module):
         x = self.final_emb(x)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
         result["out"] = x
-
-        if self.aux_classifier is not None:
-            x = features["aux"]
-            x = self.aux_classifier(x)
-            x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
-            result["aux"] = x
 
         return result
