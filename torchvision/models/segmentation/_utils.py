@@ -74,4 +74,4 @@ class _DeepLabV3PlusModel(nn.Module):
             x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
             result["aux"] = x
 
-        return x
+        return result
