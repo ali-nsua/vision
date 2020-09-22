@@ -56,10 +56,10 @@ def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=
         'deeplabv3+': (DeepLabPlusHead, DeepLabV3Plus)
     }
     inplanes = 2048
-    aspp = model_map[name][0](inplanes)
+    classifier = model_map[name][0](inplanes)
     base_model = model_map[name][1]
 
-    model = base_model(backbone, aspp, num_classes, llsize=256)
+    model = base_model(backbone, classifier, num_classes, llsize=256)
     return model
 
 
