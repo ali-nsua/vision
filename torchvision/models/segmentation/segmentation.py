@@ -131,7 +131,7 @@ def deeplabv3_resnet101(pretrained=False, progress=True,
 
 
 def deeplabv3plus_resnet50(pretrained=None, progress=True,
-                           num_classes=21, **kwargs):
+                           num_classes=21, aux_loss=None, **kwargs):
     """Constructs a DeepLabV3+ model with a ResNet-50 backbone.
 
     Args:
@@ -142,7 +142,7 @@ def deeplabv3plus_resnet50(pretrained=None, progress=True,
 
 
 def deeplabv3plus_resnet101(pretrained=None, progress=True,
-                            num_classes=21, **kwargs):
+                            num_classes=21, aux_loss=None, **kwargs):
     """Constructs a DeepLabV3+ model with a ResNet-101 backbone.
 
     Args:
