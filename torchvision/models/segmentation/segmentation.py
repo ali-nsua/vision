@@ -133,7 +133,7 @@ def deeplabv3plus_resnet50(pretrained=None, progress=True,
         pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_dl3p_model('deeplabv3+', 'resnet50', num_classes, **kwargs)
+    return _load_dl3p_model('resnet50', num_classes, **kwargs)
 
 
 def deeplabv3plus_resnet101(pretrained=None, progress=True,
@@ -144,4 +144,4 @@ def deeplabv3plus_resnet101(pretrained=None, progress=True,
         pretrained (None): No pretrained model available yet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _load_dl3p_model('deeplabv3+', 'resnet101', num_classes, **kwargs)
+    return _load_dl3p_model('resnet101', num_classes, **kwargs)
