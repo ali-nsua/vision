@@ -44,7 +44,7 @@ def _segm_resnet(name, backbone_name, num_classes, aux, pretrained_backbone=True
     return model
 
 
-def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=True):
+def _deeplabv3plus_resnet(backbone_name, num_classes, pretrained_backbone=True):
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained_backbone,
         replace_stride_with_dilation=[False, True, True])
@@ -52,14 +52,9 @@ def _deeplabv3plus_resnet(name, backbone_name, num_classes, pretrained_backbone=
     return_layers = {'layer4': 'out', 'layer1': 'low_level_features'}
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
-    model_map = {
-        'deeplabv3+': (DeepLabPlusHead, DeepLabV3Plus)
-    }
-    inplanes = 2048
-    classifier = model_map[name][0](inplanes)
-    base_model = model_map[name][1]
+    classifier = DeepLabPlusHead(2048, num_classes, llsize=256)
 
-    model = base_model(backbone, classifier, num_classes, llsize=256)
+    model = DeepLabV3Plus(backbone, classifier)
     return model
 
 
@@ -78,8 +73,8 @@ def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss
     return model
 
 
-def _load_dl3p_model(arch_type, backbone, num_classes, **kwargs):
-    return _deeplabv3plus_resnet(arch_type, backbone, num_classes, **kwargs)
+def _load_dl3p_model(backbone, num_classes, **kwargs):
+    return _deeplabv3plus_resnet(backbone, num_classes, **kwargs)
 
 
 def fcn_resnet50(pretrained=False, progress=True,

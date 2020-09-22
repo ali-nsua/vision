@@ -54,11 +54,33 @@ class DeepLabHead(nn.Sequential):
         )
 
 
-class DeepLabPlusHead(nn.Sequential):
-    def __init__(self, in_channels):
-        super(DeepLabPlusHead, self).__init__(
-            ASPP(in_channels, [12, 24, 36])
-        )
+class DeepLabPlusHead(nn.Module):
+    def __init__(self, in_channels, num_classes, llsize=256):
+        super(DeepLabPlusHead, self).__init__()
+        self.aspp = ASPP(in_channels, [12, 24, 36])
+        self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 48, 1, bias=False),
+                                              nn.BatchNorm2d(48),
+                                              nn.ReLU())
+        self.final_embedding = nn.Sequential(nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                             nn.BatchNorm2d(256),
+                                             nn.ReLU(),
+                                             nn.Dropout(0.5),
+                                             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                             nn.BatchNorm2d(256),
+                                             nn.ReLU(),
+                                             nn.Dropout(0.1),
+                                             nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
+
+    def forward(self, features, input_shape):
+        x, low_level_features = features["out"], features["low_level_features"]
+        low_level_features = self.low_level_module(low_level_features)
+        x = self.aspp(x)
+        x = F.interpolate(x, size=low_level_features.size()[2:], mode='bilinear', align_corners=True)
+        x = torch.cat((x, low_level_features), dim=1)
+        x = self.final_embedding(x)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+
+        return x
 
 
 class ASPPConv(nn.Sequential):
