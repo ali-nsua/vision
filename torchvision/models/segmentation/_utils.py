@@ -64,7 +64,6 @@ class _DeepLabV3PlusDecoder(nn.Module):
         return x
 
 
-
 class _DeepLabV3PlusModel(nn.Module):
 
     def __init__(self, backbone, aspp, num_classes, llsize=256):
