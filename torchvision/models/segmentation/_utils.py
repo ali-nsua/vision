@@ -41,8 +41,8 @@ class _DeepLabV3PlusModel(nn.Module):
         self.backbone = backbone
         self.classifier = classifier
 
-    def train(self):
-        super(_DeepLabV3PlusModel, self).train()
+    def train(self, mode=True):
+        super(_DeepLabV3PlusModel, self).train(mode)
         self.classifier.set_output_stride(16)
 
     def eval(self):
