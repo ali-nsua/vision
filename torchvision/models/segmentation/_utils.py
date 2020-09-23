@@ -44,10 +44,12 @@ class _DeepLabV3PlusModel(nn.Module):
     def train(self, mode=True):
         super(_DeepLabV3PlusModel, self).train(mode)
         self.classifier.set_output_stride(16)
+        return self
 
     def eval(self):
         super(_DeepLabV3PlusModel, self).eval()
         self.classifier.set_output_stride(8)
+        return self.train(False)
 
     def forward(self, x):
         input_shape = x.shape[-2:]
