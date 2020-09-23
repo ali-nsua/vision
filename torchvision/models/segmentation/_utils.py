@@ -41,6 +41,14 @@ class _DeepLabV3PlusModel(nn.Module):
         self.backbone = backbone
         self.classifier = classifier
 
+    def train(self):
+        super(_DeepLabV3PlusModel, self).train()
+        self.classifier.set_output_stride(16)
+
+    def eval(self):
+        super(_DeepLabV3PlusModel, self).eval()
+        self.classifier.set_output_stride(8)
+
     def forward(self, x):
         input_shape = x.shape[-2:]
         features = self.backbone(x)

@@ -52,7 +52,7 @@ def _deeplabv3plus_resnet(backbone_name, num_classes, pretrained_backbone=True):
     return_layers = {'layer4': 'out', 'layer1': 'low_level_features'}
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
-    classifier = DeepLabPlusHead(2048, num_classes, llsize=256)
+    classifier = DeepLabPlusHead(2048, output_stride=16, num_classes=num_classes, llsize=256)
 
     model = DeepLabV3Plus(backbone, classifier)
     return model

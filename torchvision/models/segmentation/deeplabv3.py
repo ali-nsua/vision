@@ -55,9 +55,15 @@ class DeepLabHead(nn.Sequential):
 
 
 class DeepLabPlusHead(nn.Module):
-    def __init__(self, in_channels, num_classes, llsize=256):
+    def __init__(self, in_channels, output_stride=16, num_classes=21, llsize=256):
         super(DeepLabPlusHead, self).__init__()
-        self.aspp = ASPP(in_channels, [12, 24, 36])
+        atrous_rates = [6, 12, 18]
+        if output_stride == 16:
+            pass
+        elif output_stride == 8:
+            atrous_rates = [12, 24, 36]
+
+        self.aspp = ASPP(in_channels, atrous_rates)
         self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 48, 1, bias=False),
                                               nn.BatchNorm2d(48),
                                               nn.ReLU())
@@ -70,6 +76,17 @@ class DeepLabPlusHead(nn.Module):
                                              nn.ReLU(),
                                              nn.Dropout(0.1),
                                              nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
+
+    def set_output_stride(self, output_stride=16):
+        atrous_rates = [6, 12, 18]
+        if output_stride == 16:
+            pass
+        elif output_stride == 8:
+            atrous_rates = [12, 24, 36]
+
+        for i in range(1, len(atrous_rates) + 1):
+            self.aspp.convs[i][0].dilation = (atrous_rates[i - 1], atrous_rates[i - 1])
+
 
     def forward(self, features, input_shape):
         x, low_level_features = features["out"], features["low_level_features"]
