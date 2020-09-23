@@ -87,7 +87,6 @@ class DeepLabPlusHead(nn.Module):
         for i in range(1, len(atrous_rates) + 1):
             self.aspp.convs[i][0].dilation = (atrous_rates[i - 1], atrous_rates[i - 1])
 
-
     def forward(self, features, input_shape):
         x, low_level_features = features["out"], features["low_level_features"]
         low_level_features = self.low_level_module(low_level_features)
