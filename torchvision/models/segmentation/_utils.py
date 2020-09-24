@@ -65,9 +65,12 @@ class _DeepLabV3PlusModel(nn.Module):
             self.dilation *= stride
             stride = 1
 
+        layer[0].conv2.stride = (stride, stride)
+        layer[0].stride = (stride, stride)
+        if layer[0].downsample is not None:
+            layer[0].downsample[0].stride = (stride, stride)
         for i in range(1, len(layer)):
-            layer[i].conv2.dilation = self.dilation
-            layer[i].conv2.stride = stride
+            layer[i].conv2.dilation = (self.dilation, self.dilation)
 
     def forward(self, x):
         input_shape = x.shape[-2:]
