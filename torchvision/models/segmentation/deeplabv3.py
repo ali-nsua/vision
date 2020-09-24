@@ -72,6 +72,7 @@ class DeepLabPlusHead(nn.Module):
                                              nn.ReLU(),
                                              nn.Dropout(0.1),
                                              nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
+        self._init_weight()
 
     def set_output_stride(self, output_stride=16):
         atrous_rates = [6, 12, 18]
@@ -93,6 +94,14 @@ class DeepLabPlusHead(nn.Module):
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
         return x
+
+    def _init_weight(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
 
 class ASPPConv(nn.Sequential):

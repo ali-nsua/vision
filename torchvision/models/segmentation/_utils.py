@@ -41,7 +41,6 @@ class _DeepLabV3PlusModel(nn.Module):
         self.dilation = 1
         self.backbone = backbone
         self.classifier = classifier
-        self._init_weight()
 
     def train(self, mode=True):
         super(_DeepLabV3PlusModel, self).train(mode)
@@ -80,11 +79,3 @@ class _DeepLabV3PlusModel(nn.Module):
         result["out"] = self.classifier(features, input_shape)
 
         return result
-
-    def _init_weight(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
