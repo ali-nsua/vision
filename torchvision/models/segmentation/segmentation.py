@@ -47,7 +47,7 @@ def _segm_resnet(name, backbone_name, num_classes, aux, pretrained_backbone=True
 def _deeplabv3plus_resnet(backbone_name, num_classes, pretrained_backbone=True):
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained_backbone,
-        replace_stride_with_dilation=[False, True, True])
+        replace_stride_with_dilation=[False, False, True])
 
     return_layers = {'layer4': 'out', 'layer1': 'low_level_features'}
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)

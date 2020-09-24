@@ -38,18 +38,32 @@ class _DeepLabV3PlusModel(nn.Module):
 
     def __init__(self, backbone, classifier):
         super(_DeepLabV3PlusModel, self).__init__()
+        self.dilation = 1
         self.backbone = backbone
         self.classifier = classifier
+        self._init_weight()
 
     def train(self, mode=True):
         super(_DeepLabV3PlusModel, self).train(mode)
+        self._fix_dilation(16)
         self.classifier.set_output_stride(16)
         return self
 
     def eval(self):
         super(_DeepLabV3PlusModel, self).eval()
+        self._fix_dilation(8)
         self.classifier.set_output_stride(8)
         return self.train(False)
+
+    def _fix_dilation(self, output_stride=16):
+        self._fix_layer_dilation(self.backbone.layer3, stride=2, dilate=(output_stride == 8))
+        self._fix_layer_dilation(self.backbone.layer4, stride=2, dilate=True)
+
+    def _fix_layer_dilation(self, layer, stride=1, dilate=False):
+        if dilate:
+            self.dilation *= stride
+        for l in range(1, layer):
+            layer[l].conv2.dilation = self.dilation
 
     def forward(self, x):
         input_shape = x.shape[-2:]
@@ -59,3 +73,11 @@ class _DeepLabV3PlusModel(nn.Module):
         result["out"] = self.classifier(features, input_shape)
 
         return result
+
+    def _init_weight(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
