@@ -62,8 +62,9 @@ class _DeepLabV3PlusModel(nn.Module):
     def _fix_layer_dilation(self, layer, stride=1, dilate=False):
         if dilate:
             self.dilation *= stride
-        for l in range(1, layer):
-            layer[l].conv2.dilation = self.dilation
+
+        for i in range(1, layer):
+            layer[i].conv2.dilation = self.dilation
 
     def forward(self, x):
         input_shape = x.shape[-2:]
