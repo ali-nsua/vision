@@ -56,15 +56,18 @@ class _DeepLabV3PlusModel(nn.Module):
         return self.train(False)
 
     def _fix_dilation(self, output_stride=16):
+        self.dilation = 1
         self._fix_layer_dilation(self.backbone.layer3, stride=2, dilate=(output_stride == 8))
         self._fix_layer_dilation(self.backbone.layer4, stride=2, dilate=True)
 
     def _fix_layer_dilation(self, layer, stride=1, dilate=False):
         if dilate:
             self.dilation *= stride
+            stride = 1
 
         for i in range(1, len(layer)):
             layer[i].conv2.dilation = self.dilation
+            layer[i].conv2.stride = stride
 
     def forward(self, x):
         input_shape = x.shape[-2:]
