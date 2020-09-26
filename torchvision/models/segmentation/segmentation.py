@@ -14,6 +14,8 @@ model_urls = {
     'fcn_resnet101_coco': 'https://download.pytorch.org/models/fcn_resnet101_coco-7ecb50ca.pth',
     'deeplabv3_resnet50_coco': 'https://download.pytorch.org/models/deeplabv3_resnet50_coco-cd0a2569.pth',
     'deeplabv3_resnet101_coco': 'https://download.pytorch.org/models/deeplabv3_resnet101_coco-586e9e4e.pth',
+    'deeplabv3+_resnet50_coco': None,
+    'deeplabv3+_resnet101_coco': None,
 }
 
 
