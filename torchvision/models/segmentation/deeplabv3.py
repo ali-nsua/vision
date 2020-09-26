@@ -108,16 +108,6 @@ class DeepLabPlusHead(nn.Module):
                                      nn.Dropout(0.1),
                                      nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
 
-    def set_output_stride(self, output_stride=16):
-        atrous_rates = [6, 12, 18]
-        if output_stride == 16:
-            pass
-        elif output_stride == 8:
-            atrous_rates = [12, 24, 36]
-
-        for i in range(1, len(atrous_rates) + 1):
-            self.aspp.convs[i][0].dilation = (atrous_rates[i - 1], atrous_rates[i - 1])
-
     def forward(self, input_features):
         x, x_low = input_features
         low_level_features = self.low_level_project(x_low)
