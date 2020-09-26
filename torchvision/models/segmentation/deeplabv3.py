@@ -90,10 +90,10 @@ class DeepLabHead(nn.Sequential):
 
 
 class DeepLabPlusHead(nn.Module):
-    def __init__(self, in_channels, num_classes=21):
+    def __init__(self, in_channels, num_classes):
         super(DeepLabPlusHead, self).__init__()
         # default output stride is 16 (training)
-        atrous_rates = [6, 12, 18] # os = 16
+        atrous_rates = [6, 12, 18]  # os = 16
         # atrous_rates = [12, 24, 36] # os = 8
 
         self.aspp = ASPP(in_channels, atrous_rates)
