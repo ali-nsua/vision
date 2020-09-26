@@ -2,13 +2,13 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from ._utils import _SimpleSegmentationModel, _DeepLabV3PlusModel
+from ._utils import _SimpleSegmentationModel
 
 
 __all__ = ["DeepLabV3", "DeepLabV3Plus"]
 
 
-class DeepLabV3Plus(_DeepLabV3PlusModel):
+class DeepLabV3Plus(_SimpleSegmentationModel):
     """
     Implements DeepLabV3+ model from
     `"Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
@@ -21,8 +21,43 @@ class DeepLabV3Plus(_DeepLabV3PlusModel):
             is used.
         classifier (nn.Module): module that takes the "out" element returned from
             the backbone and returns a dense prediction.
+        aux_classifier (nn.Module, optional): auxiliary classifier used during training
     """
-    pass
+    def __init__(self, backbone, classifier, aux_classifier=None):
+        super(DeepLabV3Plus, self).__init__(backbone, classifier, aux_classifier, True)
+        self.dilation = 1
+
+    def train(self, mode=True):
+        super(DeepLabV3Plus, self).train(mode)
+        self._set_output_stride(16)
+        return self
+
+    def eval(self):
+        super(DeepLabV3Plus, self).eval()
+        self._set_output_stride(8)
+        return self.train(False)
+
+    def _set_output_stride(self, output_stride=16):
+        dilation_rates = [6, 12, 18] if output_stride == 16 else [12, 24, 36]
+
+        for i in range(len(dilation_rates)):
+            self.classifier.aspp.convs[i + 1][0].dilation = (dilation_rates[i], dilation_rates[i])
+
+        self.dilation = 1
+        self._set_resnet_layer_dilation(self.backbone.layer3, stride=2, dilate=(output_stride == 8))
+        self._set_resnet_layer_dilation(self.backbone.layer4, stride=2, dilate=True)
+
+    def _set_resnet_layer_dilation(self, layer, stride=1, dilate=False):
+        if dilate:
+            self.dilation *= stride
+            stride = 1
+        stride = (stride, stride)
+        layer[0].conv2.stride = stride
+        layer[0].stride = stride
+        if layer[0].downsample is not None:
+            layer[0].downsample[0].stride = stride
+        for i in range(1, len(layer)):
+            layer[i].conv2.dilation = (self.dilation, self.dilation)
 
 
 class DeepLabV3(_SimpleSegmentationModel):
@@ -55,24 +90,23 @@ class DeepLabHead(nn.Sequential):
 
 
 class DeepLabPlusHead(nn.Module):
-    def __init__(self, in_channels, output_stride=16, num_classes=21, llsize=256):
+    def __init__(self, in_channels, num_classes=21):
         super(DeepLabPlusHead, self).__init__()
-        atrous_rates = [6, 12, 18]
-        if output_stride == 16:
-            pass
-        elif output_stride == 8:
-            atrous_rates = [12, 24, 36]
+        # default output stride is 16 (training)
+        atrous_rates = [6, 12, 18] # os = 16
+        # atrous_rates = [12, 24, 36] # os = 8
 
         self.aspp = ASPP(in_channels, atrous_rates)
-        self.low_level_module = nn.Sequential(nn.Conv2d(llsize, 48, 1, bias=False),
-                                              nn.BatchNorm2d(48),
-                                              nn.ReLU())
-        self.final_embedding = nn.Sequential(nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                             nn.BatchNorm2d(256),
-                                             nn.ReLU(),
-                                             nn.Dropout(0.1),
-                                             nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
-        self._init_weight()
+        # Note: low_level_module takes the level1 output from resnet,
+        # which is why the input n_channels is set to 256.
+        self.low_level_project = nn.Sequential(nn.Conv2d(256, 48, 1, bias=False),
+                                               nn.BatchNorm2d(48),
+                                               nn.ReLU())
+        self.project = nn.Sequential(nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                     nn.BatchNorm2d(256),
+                                     nn.ReLU(),
+                                     nn.Dropout(0.1),
+                                     nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
 
     def set_output_stride(self, output_stride=16):
         atrous_rates = [6, 12, 18]
@@ -84,24 +118,15 @@ class DeepLabPlusHead(nn.Module):
         for i in range(1, len(atrous_rates) + 1):
             self.aspp.convs[i][0].dilation = (atrous_rates[i - 1], atrous_rates[i - 1])
 
-    def forward(self, features, input_shape):
-        x, low_level_features = features["out"], features["low_level_features"]
-        low_level_features = self.low_level_module(low_level_features)
+    def forward(self, input_features):
+        x, x_low = input_features
+        low_level_features = self.low_level_project(x_low)
         x = self.aspp(x)
         x = F.interpolate(x, size=low_level_features.size()[2:], mode='bilinear', align_corners=True)
         x = torch.cat((x, low_level_features), dim=1)
-        x = self.final_embedding(x)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        x = self.project(x)
 
         return x
-
-    def _init_weight(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
 
 
 class ASPPConv(nn.Sequential):
