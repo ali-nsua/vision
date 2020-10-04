@@ -380,6 +380,16 @@ class Tester(unittest.TestCase):
         self.assertTrue(np.all(symmetric_middle_slice == np.asarray([0, 1, 200, 200, 1, 0])))
         self.assertEqual(transforms.ToTensor()(symmetric_padded_img).size(), (3, 32, 34))
 
+        # Check negative padding explicitly for symmetric case, since it is not
+        # implemented for tensor case to compare to
+        # Crop 1 to left, pad 2 to top, pad 3 to right, crop 3 to bottom
+        symmetric_padded_img_neg = F.pad(img, (-1, 2, 3, -3), padding_mode='symmetric')
+        symmetric_neg_middle_left = np.asarray(symmetric_padded_img_neg).transpose(2, 0, 1)[0][17][:3]
+        symmetric_neg_middle_right = np.asarray(symmetric_padded_img_neg).transpose(2, 0, 1)[0][17][-4:]
+        self.assertTrue(np.all(symmetric_neg_middle_left == np.asarray([1, 0, 0])))
+        self.assertTrue(np.all(symmetric_neg_middle_right == np.asarray([200, 200, 0, 0])))
+        self.assertEqual(transforms.ToTensor()(symmetric_padded_img_neg).size(), (3, 28, 31))
+
     def test_pad_raises_with_invalid_pad_sequence_len(self):
         with self.assertRaises(ValueError):
             transforms.Pad(())
@@ -1623,67 +1633,6 @@ class Tester(unittest.TestCase):
 
         # Checking if RandomGrayscale can be printed as string
         trans3.__repr__()
-
-    def test_random_erasing(self):
-        """Unit tests for random erasing transform"""
-        for is_scripted in [False, True]:
-            torch.manual_seed(12)
-            img = torch.rand(3, 60, 60)
-
-            # Test Set 0: invalid value
-            random_erasing = transforms.RandomErasing(value=(0.1, 0.2, 0.3, 0.4), p=1.0)
-            with self.assertRaises(ValueError, msg="If value is a sequence, it should have either a single value or 3"):
-                img_re = random_erasing(img)
-
-            # Test Set 1: Erasing with int value
-            random_erasing = transforms.RandomErasing(value=0.2)
-            if is_scripted:
-                random_erasing = torch.jit.script(random_erasing)
-
-            i, j, h, w, v = transforms.RandomErasing.get_params(
-                img, scale=random_erasing.scale, ratio=random_erasing.ratio, value=[random_erasing.value, ]
-            )
-            img_output = F.erase(img, i, j, h, w, v)
-            self.assertEqual(img_output.size(0), 3)
-
-            # Test Set 2: Check if the unerased region is preserved
-            true_output = img.clone()
-            true_output[:, i:i + h, j:j + w] = random_erasing.value
-            self.assertTrue(torch.equal(true_output, img_output))
-
-            # Test Set 3: Erasing with random value
-            random_erasing = transforms.RandomErasing(value="random")
-            if is_scripted:
-                random_erasing = torch.jit.script(random_erasing)
-            img_re = random_erasing(img)
-
-            self.assertEqual(img_re.size(0), 3)
-
-            # Test Set 4: Erasing with tuple value
-            random_erasing = transforms.RandomErasing(value=(0.2, 0.2, 0.2))
-            if is_scripted:
-                random_erasing = torch.jit.script(random_erasing)
-            img_re = random_erasing(img)
-            self.assertEqual(img_re.size(0), 3)
-            true_output = img.clone()
-            true_output[:, i:i + h, j:j + w] = torch.tensor(random_erasing.value)[:, None, None]
-            self.assertTrue(torch.equal(true_output, img_output))
-
-            # Test Set 5: Testing the inplace behaviour
-            random_erasing = transforms.RandomErasing(value=(0.2,), inplace=True)
-            if is_scripted:
-                random_erasing = torch.jit.script(random_erasing)
-
-            img_re = random_erasing(img)
-            self.assertTrue(torch.equal(img_re, img))
-
-            # Test Set 6: Checking when no erased region is selected
-            img = torch.rand([3, 300, 1])
-            random_erasing = transforms.RandomErasing(ratio=(0.1, 0.2), value="random")
-            if is_scripted:
-                random_erasing = torch.jit.script(random_erasing)
-            img_re = random_erasing(img)
-            self.assertTrue(torch.equal(img_re, img))
 
 
 if __name__ == '__main__':
