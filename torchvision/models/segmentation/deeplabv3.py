@@ -102,18 +102,14 @@ class DeepLabPlusHead(nn.Module):
         self.low_level_project = nn.Sequential(nn.Conv2d(256, 48, 1, bias=False),
                                                nn.BatchNorm2d(48),
                                                nn.ReLU())
-        self.project = nn.Sequential(
-            nn.Conv2d(304, 304, kernel_size=3, stride=1, padding=1, groups=304, bias=False),
-            nn.Conv2d(304, 256, kernel_size=1, stride=1, padding=0, bias=False),
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, groups=256, bias=False),
-            nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0, bias=False),
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Conv2d(256, num_classes, kernel_size=1, stride=1)
-        )
+        self.project = nn.Sequential(nn.Conv2d(304, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                     nn.BatchNorm2d(256),
+                                     nn.ReLU(),
+                                     nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
+                                     nn.BatchNorm2d(256),
+                                     nn.ReLU(),
+                                     nn.Dropout(0.1),
+                                     nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
 
     def forward(self, input_features):
         x, x_low = input_features
